@@ -3,6 +3,7 @@ import Hls from 'hls.js';
 import { usePlayerStore } from '@/stores/playerStore';
 export function HLSPlayer() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef = useRef<Hls | null>(null);
   const videoSrc = usePlayerStore(state => state.videoSrc);
   const isPlaying = usePlayerStore(state => state.isPlaying);
   const isMuted = usePlayerStore(state => state.isMuted);
@@ -15,16 +16,32 @@ export function HLSPlayer() {
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !videoSrc) return;
-    let hls: Hls | null = null;
+
+    // Clean up any previous Hls instance before creating a new one
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+
     if (Hls.isSupported()) {
-      hls = new Hls();
+      const hls = new Hls();
+      hlsRef.current = hls;
       hls.loadSource(videoSrc);
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         setLoading(false);
-        if (isPlaying) video.play().catch(e => console.error("Autoplay failed", e));
+        if (isPlaying) {
+          video
+            .play()
+            .catch(e => {
+              if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') {
+                console.error('Play failed', e);
+              }
+            });
+        }
       });
       hls.on(Hls.Events.ERROR, (event, data) => {
+        // Log only fatal (non‑recoverable) errors
         if (data.fatal) {
           console.error('HLS fatal error:', data);
         }
@@ -33,20 +50,36 @@ export function HLSPlayer() {
       video.src = videoSrc;
       video.addEventListener('loadedmetadata', () => {
         setLoading(false);
-        if (isPlaying) video.play().catch(e => console.error("Autoplay failed", e));
+        if (isPlaying) {
+          video
+            .play()
+            .catch(e => {
+              if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') {
+                console.error('Play failed', e);
+              }
+            });
+        }
       });
     }
+
     return () => {
-      if (hls) {
-        hls.destroy();
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
       }
     };
-  }, [videoSrc, setLoading, isPlaying]);
+  }, [videoSrc]);
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
     if (isPlaying) {
-      video.play().catch(e => console.error("Play failed", e));
+      video
+        .play()
+        .catch(e => {
+          if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') {
+            console.error('Play failed', e);
+          }
+        });
     } else {
       video.pause();
     }

@@ -6,14 +6,16 @@ interface SwipeFeedProps {
   prevVideo: () => void;
 }
 export function SwipeFeed({ children, nextVideo, prevVideo }: SwipeFeedProps) {
-  const handlers = useSwipeable({
-    onSwipedUp: () => nextVideo(),
-    onSwipedDown: () => prevVideo(),
-    preventScrollOnSwipe: true,
-    trackMouse: true,
-  });
+    const handlers = useSwipeable({
+      onSwipedUp: () => nextVideo(),
+      onSwipedDown: () => prevVideo(),
+      delta: 80,
+      preventScrollOnSwipe: false,
+      preventDefaultTouchmoveEvent: true,
+      trackMouse: true,
+    });
   return (
-    <div {...handlers} className="w-full h-full touch-pan-y">
+    <div {...handlers} className="w-full h-full overflow-hidden touch-pan-y">
       {children}
     </div>
   );

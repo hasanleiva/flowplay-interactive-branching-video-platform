@@ -53,6 +53,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>((set, get) => 
         currentVideoId: videoId,
         currentFeedIndex: newFeedIndex !== -1 ? newFeedIndex : get().currentFeedIndex,
         isPlaying: true,
+        isLoading: false,   // <-- clear loading flag
       });
     } catch (error) {
       console.error("Error loading scenario:", error);
@@ -67,6 +68,15 @@ export const usePlayerStore = create<PlayerState & PlayerActions>((set, get) => 
         if (!response.ok) throw new Error(`Failed to fetch branch JSON: ${targetJson}`);
         const scenario: Scenario = await response.json();
         set({ branches: scenario.branches });
+        // Extract the video ID from the branch JSON path (e.g., "/data/video2.json")
+        const newVideoId = targetJson.split('/').pop()?.replace('.json', '') ?? null;
+        if (newVideoId && feedVideos.includes(newVideoId)) {
+          const newFeedIndex = feedVideos.findIndex((id) => id === newVideoId);
+          set({
+            currentVideoId: newVideoId,
+            currentFeedIndex: newFeedIndex,
+          });
+        }
       } catch (error) {
         console.error("Error loading branch scenario:", error);
         set({ branches: [] }); // Fallback to no branches on error
@@ -75,6 +85,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>((set, get) => 
     set({
       videoSrc: targetVideoUrl,
       isPlaying: true,
+      isLoading: false,   // <-- clear loading flag
     });
   },
   nextVideo: () => {
