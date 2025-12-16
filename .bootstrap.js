@@ -78,7 +78,8 @@ function updateWranglerJsonc() {
 
 function runSetupCommands() {
     const commands = [
-    "bun add hls.js@^1.5.16"
+    "bun add hls.js@^1.5.16",
+    "bun install hls.js @types/hls.js"
 ];
     
     if (commands.length === 0) {
