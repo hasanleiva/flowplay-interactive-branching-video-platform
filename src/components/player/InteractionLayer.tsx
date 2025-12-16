@@ -26,7 +26,7 @@ export function InteractionLayer() {
             }}
           >
             <Button
-              onClick={() => loadScenario(branch.targetScenarioId)}
+              onClick={() => branch.targetScenarioId && loadScenario(branch.targetScenarioId)}
               className="bg-white/20 text-white backdrop-blur-md border border-white/30 hover:bg-white/30 shadow-lg px-6 py-3 text-base font-semibold"
             >
               {branch.label}

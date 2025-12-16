@@ -1,50 +1,50 @@
 import type { Scenario } from '@/lib/types';
-export const initialScenarioId = 'start';
 export const scenarios: Record<string, Scenario> = {
-  start: {
+  'start': {
     id: 'start',
-    mainVideoUrl: 'https://stream.mux.com/x36xhzz0262501I021g02dc47w01kn527J/low.m3u8', // Mux test stream
+    mainVideoUrl: 'https://vz-a7f3d33c-748.b-cdn.net/2c6d7f96-96a5-4db4-81cb-7b5354a1d5c5/playlist.m3u8',
     branches: [
       {
         appearAtSecond: 5,
-        label: 'City',
-        position: { x: 50, y: 40 },
-        targetVideoUrl: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_4x3/bipbop_4x3_variant.m3u8', // Apple test stream
+        label: 'Explore the City',
+        position: { x: 50, y: 45 },
+        targetVideoUrl: 'https://vz-a7f3d33c-748.b-cdn.net/0e9d1dfd-445c-4f10-9b63-10761a221087/playlist.m3u8',
         targetScenarioId: 'city',
       },
       {
         appearAtSecond: 5,
-        label: 'Nature',
-        position: { x: 50, y: 60 },
-        targetVideoUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', // Mux test stream (alternative)
+        label: 'Head to Nature',
+        position: { x: 50, y: 55 },
+        targetVideoUrl: 'https://vz-a7f3d33c-748.b-cdn.net/51a86673-81f1-4d8b-ab83-060a12b326d6/playlist.m3u8',
         targetScenarioId: 'nature',
       },
     ],
   },
-  city: {
+  'city': {
     id: 'city',
-    mainVideoUrl: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_4x3/bipbop_4x3_variant.m3u8',
-    branches: [
-      {
-        appearAtSecond: 8,
-        label: 'Go Back',
-        position: { x: 50, y: 50 },
-        targetVideoUrl: 'https://stream.mux.com/x36xhzz0262501I021g02dc47w01kn527J/low.m3u8',
-        targetScenarioId: 'start',
-      },
-    ],
-  },
-  nature: {
-    id: 'nature',
-    mainVideoUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
+    mainVideoUrl: 'https://vz-a7f3d33c-748.b-cdn.net/0e9d1dfd-445c-4f10-9b63-10761a221087/playlist.m3u8',
     branches: [
       {
         appearAtSecond: 8,
         label: 'Restart',
         position: { x: 50, y: 50 },
-        targetVideoUrl: 'https://stream.mux.com/x36xhzz0262501I021g02dc47w01kn527J/low.m3u8',
+        targetVideoUrl: 'https://vz-a7f3d33c-748.b-cdn.net/2c6d7f96-96a5-4db4-81cb-7b5354a1d5c5/playlist.m3u8',
+        targetScenarioId: 'start',
+      },
+    ],
+  },
+  'nature': {
+    id: 'nature',
+    mainVideoUrl: 'https://vz-a7f3d33c-748.b-cdn.net/51a86673-81f1-4d8b-ab83-060a12b326d6/playlist.m3u8',
+    branches: [
+      {
+        appearAtSecond: 8,
+        label: 'Restart',
+        position: { x: 50, y: 50 },
+        targetVideoUrl: 'https://vz-a7f3d33c-748.b-cdn.net/2c6d7f96-96a5-4db4-81cb-7b5354a1d5c5/playlist.m3u8',
         targetScenarioId: 'start',
       },
     ],
   },
 };
+export const initialScenarioId = 'start';

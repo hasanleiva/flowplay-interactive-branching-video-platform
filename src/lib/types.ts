@@ -7,7 +7,7 @@ export interface Branch {
   label: string;
   position: Position;
   targetVideoUrl: string;
-  targetScenarioId: string;
+  targetScenarioId?: string;
 }
 export interface Scenario {
   id: string;

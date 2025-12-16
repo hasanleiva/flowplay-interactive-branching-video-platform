@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Branch, Scenario } from '@/lib/types';
-import { scenarios, initialScenarioId } from '@/data/scenarios';
+import { scenarios } from '@/data/scenarios';
 interface PlayerState {
   currentScenarioId: string | null;
   videoSrc: string | null;
@@ -13,7 +13,7 @@ interface PlayerState {
   duration: number;
 }
 interface PlayerActions {
-  startExperience: () => void;
+  startExperience: (scenarioId: string) => void;
   loadScenario: (scenarioId: string) => void;
   togglePlay: () => void;
   toggleMute: () => void;
@@ -23,7 +23,7 @@ interface PlayerActions {
   play: () => void;
   pause: () => void;
 }
-export const usePlayerStore = create<PlayerState & PlayerActions>((set) => ({
+export const usePlayerStore = create<PlayerState & PlayerActions>((set, get) => ({
   currentScenarioId: null,
   videoSrc: null,
   branches: [],
@@ -33,22 +33,19 @@ export const usePlayerStore = create<PlayerState & PlayerActions>((set) => ({
   isLoading: true,
   currentTime: 0,
   duration: 0,
-  startExperience: () => {
-    const initialScenario = scenarios[initialScenarioId];
-    if (initialScenario) {
+  startExperience: (scenarioId: string) => {
+    const scenario = scenarios[scenarioId];
+    if (scenario) {
       set({
         isStarted: true,
-        isLoading: true,
-        isPlaying: false,
-        currentTime: 0,
-        videoSrc: initialScenario.mainVideoUrl,
-        branches: initialScenario.branches,
-        currentScenarioId: initialScenario.id,
         isPlaying: true,
+        isMuted: false,
+        isLoading: true,
+        currentScenarioId: scenario.id,
+        videoSrc: scenario.mainVideoUrl,
+        branches: scenario.branches,
+        currentTime: 0,
       });
-    } else {
-      console.error('Initial scenario not found!');
-      set({ isStarted: false, isLoading: false });
     }
   },
   loadScenario: (scenarioId: string) => {
@@ -56,18 +53,14 @@ export const usePlayerStore = create<PlayerState & PlayerActions>((set) => ({
     if (scenario) {
       set({
         isLoading: true,
-        isPlaying: false,
-        currentTime: 0,
-        branches: [], // Clear old branches immediately
+        isPlaying: false, // Will be set to true by player once ready
+        currentScenarioId: scenario.id,
         videoSrc: scenario.mainVideoUrl,
         branches: scenario.branches,
-        currentScenarioId: scenario.id,
-        isPlaying: true,
+        currentTime: 0,
       });
-    } else {
-      console.error(`Scenario with id "${scenarioId}" not found!`);
-      // Fallback or error state
-      set({ isPlaying: false, isLoading: false });
+      // Delay play to allow video to load
+      setTimeout(() => set({ isPlaying: true }), 100);
     }
   },
   togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
