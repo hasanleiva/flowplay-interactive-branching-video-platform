@@ -1,47 +1,50 @@
 import type { Scenario } from '@/lib/types';
+// Client-provided working HLS URLs
+const START_VIDEO_URL = "https://vz-8d915ecf-df3.b-cdn.net/1748ca9b-24ed-4b76-acd6-4c3d183e4040/playlist.m3u8";
+const BRANCH_VIDEO_URL = "https://vz-8d915ecf-df3.b-cdn.net/72ef6d8a-c162-4647-a9b2-0e298ea68c8e/playlist.m3u8";
 export const scenarios: Record<string, Scenario> = {
   'start': {
     id: 'start',
-    mainVideoUrl: 'https://vz-a7f3d33c-748.b-cdn.net/2c6d7f96-96a5-4db4-81cb-7b5354a1d5c5/playlist.m3u8',
+    mainVideoUrl: START_VIDEO_URL,
     branches: [
       {
         appearAtSecond: 5,
         label: 'Explore the City',
         position: { x: 50, y: 45 },
-        targetVideoUrl: 'https://vz-a7f3d33c-748.b-cdn.net/0e9d1dfd-445c-4f10-9b63-10761a221087/playlist.m3u8',
+        targetVideoUrl: BRANCH_VIDEO_URL,
         targetScenarioId: 'city',
       },
       {
         appearAtSecond: 5,
         label: 'Head to Nature',
         position: { x: 50, y: 55 },
-        targetVideoUrl: 'https://vz-a7f3d33c-748.b-cdn.net/51a86673-81f1-4d8b-ab83-060a12b326d6/playlist.m3u8',
+        targetVideoUrl: BRANCH_VIDEO_URL, // Per client, nature and city use the same branch video
         targetScenarioId: 'nature',
       },
     ],
   },
   'city': {
     id: 'city',
-    mainVideoUrl: 'https://vz-a7f3d33c-748.b-cdn.net/0e9d1dfd-445c-4f10-9b63-10761a221087/playlist.m3u8',
+    mainVideoUrl: BRANCH_VIDEO_URL,
     branches: [
       {
         appearAtSecond: 8,
         label: 'Restart',
         position: { x: 50, y: 50 },
-        targetVideoUrl: 'https://vz-a7f3d33c-748.b-cdn.net/2c6d7f96-96a5-4db4-81cb-7b5354a1d5c5/playlist.m3u8',
+        targetVideoUrl: START_VIDEO_URL,
         targetScenarioId: 'start',
       },
     ],
   },
   'nature': {
     id: 'nature',
-    mainVideoUrl: 'https://vz-a7f3d33c-748.b-cdn.net/51a86673-81f1-4d8b-ab83-060a12b326d6/playlist.m3u8',
+    mainVideoUrl: BRANCH_VIDEO_URL, // Per client, nature and city use the same branch video
     branches: [
       {
         appearAtSecond: 8,
         label: 'Restart',
         position: { x: 50, y: 50 },
-        targetVideoUrl: 'https://vz-a7f3d33c-748.b-cdn.net/2c6d7f96-96a5-4db4-81cb-7b5354a1d5c5/playlist.m3u8',
+        targetVideoUrl: START_VIDEO_URL,
         targetScenarioId: 'start',
       },
     ],
