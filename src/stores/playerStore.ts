@@ -1,8 +1,10 @@
 import { create } from 'zustand';
 import type { Branch, Scenario } from '@/lib/types';
-import { scenarios } from '@/data/scenarios';
+const feedVideos = ['video1', 'video2', 'video3'];
 interface PlayerState {
-  currentScenarioId: string | null;
+  feedVideos: string[];
+  currentFeedIndex: number;
+  currentVideoId: string | null;
   videoSrc: string | null;
   branches: Branch[];
   isPlaying: boolean;
@@ -13,8 +15,10 @@ interface PlayerState {
   duration: number;
 }
 interface PlayerActions {
-  startExperience: (scenarioId: string) => void;
-  loadScenario: (scenarioId: string) => void;
+  loadVideo: (videoId: string) => Promise<void>;
+  loadBranch: (targetVideoUrl: string, targetJson?: string) => Promise<void>;
+  nextVideo: () => void;
+  prevVideo: () => void;
   togglePlay: () => void;
   toggleMute: () => void;
   setCurrentTime: (time: number) => void;
@@ -24,7 +28,9 @@ interface PlayerActions {
   pause: () => void;
 }
 export const usePlayerStore = create<PlayerState & PlayerActions>((set, get) => ({
-  currentScenarioId: null,
+  feedVideos,
+  currentFeedIndex: 0,
+  currentVideoId: null,
   videoSrc: null,
   branches: [],
   isPlaying: false,
@@ -33,35 +39,53 @@ export const usePlayerStore = create<PlayerState & PlayerActions>((set, get) => 
   isLoading: true,
   currentTime: 0,
   duration: 0,
-  startExperience: (scenarioId: string) => {
-    const scenario = scenarios[scenarioId];
-    if (scenario) {
+  loadVideo: async (videoId: string) => {
+    set({ isLoading: true, isPlaying: false, currentTime: 0, branches: [] });
+    try {
+      const response = await fetch(`/data/${videoId}.json`);
+      if (!response.ok) throw new Error(`Failed to fetch scenario: ${videoId}`);
+      const scenario: Scenario = await response.json();
+      const newFeedIndex = get().feedVideos.findIndex(id => id === videoId);
       set({
         isStarted: true,
-        isPlaying: true,
-        isMuted: false,
-        isLoading: true,
-        currentScenarioId: scenario.id,
         videoSrc: scenario.mainVideoUrl,
         branches: scenario.branches,
-        currentTime: 0,
+        currentVideoId: videoId,
+        currentFeedIndex: newFeedIndex !== -1 ? newFeedIndex : get().currentFeedIndex,
+        isPlaying: true,
       });
+    } catch (error) {
+      console.error("Error loading scenario:", error);
+      set({ isLoading: false, isStarted: false });
     }
   },
-  loadScenario: (scenarioId: string) => {
-    const scenario = scenarios[scenarioId];
-    if (scenario) {
-      set({
-        isLoading: true,
-        isPlaying: false, // Will be set to true by player once ready
-        currentScenarioId: scenario.id,
-        videoSrc: scenario.mainVideoUrl,
-        branches: scenario.branches,
-        currentTime: 0,
-      });
-      // Delay play to allow video to load
-      setTimeout(() => set({ isPlaying: true }), 100);
+  loadBranch: async (targetVideoUrl: string, targetJson?: string) => {
+    set({ isLoading: true, isPlaying: false, currentTime: 0, branches: [] });
+    if (targetJson) {
+      try {
+        const response = await fetch(targetJson);
+        if (!response.ok) throw new Error(`Failed to fetch branch JSON: ${targetJson}`);
+        const scenario: Scenario = await response.json();
+        set({ branches: scenario.branches });
+      } catch (error) {
+        console.error("Error loading branch scenario:", error);
+        set({ branches: [] }); // Fallback to no branches on error
+      }
     }
+    set({
+      videoSrc: targetVideoUrl,
+      isPlaying: true,
+    });
+  },
+  nextVideo: () => {
+    const { feedVideos, currentFeedIndex } = get();
+    const nextIndex = (currentFeedIndex + 1) % feedVideos.length;
+    get().loadVideo(feedVideos[nextIndex]);
+  },
+  prevVideo: () => {
+    const { feedVideos, currentFeedIndex } = get();
+    const prevIndex = (currentFeedIndex - 1 + feedVideos.length) % feedVideos.length;
+    get().loadVideo(feedVideos[prevIndex]);
   },
   togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
   play: () => set({ isPlaying: true }),

@@ -11,6 +11,7 @@ export function HLSPlayer() {
   const setLoading = usePlayerStore(state => state.setLoading);
   const play = usePlayerStore(state => state.play);
   const pause = usePlayerStore(state => state.pause);
+  const nextVideo = usePlayerStore(state => state.nextVideo);
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !videoSrc) return;
@@ -22,6 +23,11 @@ export function HLSPlayer() {
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         setLoading(false);
         if (isPlaying) video.play().catch(e => console.error("Autoplay failed", e));
+      });
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        if (data.fatal) {
+          console.error('HLS fatal error:', data);
+        }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = videoSrc;
@@ -72,7 +78,8 @@ export function HLSPlayer() {
       onWaiting={() => setLoading(true)}
       onPlay={play}
       onPause={pause}
-      loop={false} // Important for branching logic
+      onEnded={nextVideo}
+      loop={false}
     />
   );
 }

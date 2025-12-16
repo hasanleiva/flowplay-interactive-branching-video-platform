@@ -1,11 +1,11 @@
 import { PlayCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MobileContainer } from '@/components/layout/MobileContainer';
+import { SwipeFeed } from '@/components/layout/SwipeFeed';
 import { HLSPlayer } from '@/components/player/HLSPlayer';
 import { ControlsOverlay } from '@/components/player/ControlsOverlay';
 import { InteractionLayer } from '@/components/player/InteractionLayer';
 import { usePlayerStore } from '@/stores/playerStore';
-import { initialScenarioId } from '@/data/scenarios';
 import { Button } from '@/components/ui/button';
 function InteractivePlayer() {
   return (
@@ -17,7 +17,7 @@ function InteractivePlayer() {
   );
 }
 function StartOverlay() {
-  const startExperience = usePlayerStore(state => state.startExperience);
+  const loadVideo = usePlayerStore(state => state.loadVideo);
   return (
     <motion.div
       initial={{ opacity: 1 }}
@@ -44,7 +44,7 @@ function StartOverlay() {
         className="mt-8"
       >
         <Button
-          onClick={() => startExperience(initialScenarioId)}
+          onClick={() => loadVideo('video1')}
           className="bg-orange-500 text-white hover:bg-orange-600 h-16 w-16 rounded-full p-0 flex items-center justify-center shadow-lg shadow-orange-500/30 transition-all duration-300 hover:scale-110 active:scale-95"
           aria-label="Start Experience"
         >
@@ -59,6 +59,8 @@ function StartOverlay() {
 }
 export function HomePage() {
   const isStarted = usePlayerStore(state => state.isStarted);
+  const nextVideo = usePlayerStore(state => state.nextVideo);
+  const prevVideo = usePlayerStore(state => state.prevVideo);
   return (
     <MobileContainer>
       <AnimatePresence mode="wait">
@@ -70,7 +72,9 @@ export function HomePage() {
             transition={{ duration: 0.5 }}
             className="w-full h-full"
           >
-            <InteractivePlayer />
+            <SwipeFeed nextVideo={nextVideo} prevVideo={prevVideo}>
+              <InteractivePlayer />
+            </SwipeFeed>
           </motion.div>
         ) : (
           <StartOverlay key="start" />

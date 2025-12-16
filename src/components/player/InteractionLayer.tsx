@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 export function InteractionLayer() {
   const branches = usePlayerStore(state => state.branches);
   const currentTime = usePlayerStore(state => state.currentTime);
-  const loadScenario = usePlayerStore(state => state.loadScenario);
+  const loadBranch = usePlayerStore(state => state.loadBranch);
   const visibleBranches = branches.filter(
     (branch) => currentTime >= branch.appearAtSecond
   );
@@ -26,7 +26,7 @@ export function InteractionLayer() {
             }}
           >
             <Button
-              onClick={() => branch.targetScenarioId && loadScenario(branch.targetScenarioId)}
+              onClick={() => loadBranch(branch.targetVideoUrl, branch.targetJson)}
               className="bg-white/20 text-white backdrop-blur-md border border-white/30 hover:bg-white/30 shadow-lg px-6 py-3 text-base font-semibold"
             >
               {branch.label}
