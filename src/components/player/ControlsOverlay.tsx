@@ -8,7 +8,7 @@ export function ControlsOverlay() {
   const isLoading = usePlayerStore(state => state.isLoading);
   const currentTime = usePlayerStore(state => state.currentTime);
   const duration = usePlayerStore(state => state.duration);
-  const currentVideoId = usePlayerStore(state => state.currentVideoId);
+  const currentScenarioId = usePlayerStore(state => state.currentScenarioId);
   const togglePlay = usePlayerStore(state => state.togglePlay);
   const toggleMute = usePlayerStore(state => state.toggleMute);
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -50,14 +50,14 @@ export function ControlsOverlay() {
         </AnimatePresence>
       </div>
       <AnimatePresence>
-        {currentVideoId && (
+        {currentScenarioId && (
            <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-black/30 backdrop-blur text-white px-4 py-2 rounded-full text-sm font-semibold pointer-events-auto"
             >
-            {currentVideoId.replace('video', 'Scenario ')}
+            Scenario: {currentScenarioId.toUpperCase()}
           </motion.div>
         )}
       </AnimatePresence>

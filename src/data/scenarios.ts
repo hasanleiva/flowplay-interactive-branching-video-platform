@@ -1,53 +1,50 @@
 import type { Scenario } from '@/lib/types';
-// Client-provided working HLS URLs
-const START_VIDEO_URL = "https://vz-8d915ecf-df3.b-cdn.net/1748ca9b-24ed-4b76-acd6-4c3d183e4040/playlist.m3u8";
-const BRANCH_VIDEO_URL = "https://vz-8d915ecf-df3.b-cdn.net/72ef6d8a-c162-4647-a9b2-0e298ea68c8e/playlist.m3u8";
+export const initialScenarioId = 'start';
 export const scenarios: Record<string, Scenario> = {
-  'start': {
+  start: {
     id: 'start',
-    mainVideoUrl: START_VIDEO_URL,
+    mainVideoUrl: 'https://stream.mux.com/x36xhzz0262501I021g02dc47w01kn527J/low.m3u8', // Mux test stream
     branches: [
       {
         appearAtSecond: 5,
-        label: 'Explore the City',
-        position: { x: 50, y: 45 },
-        targetVideoUrl: BRANCH_VIDEO_URL,
+        label: 'City',
+        position: { x: 50, y: 40 },
+        targetVideoUrl: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_4x3/bipbop_4x3_variant.m3u8', // Apple test stream
         targetScenarioId: 'city',
       },
       {
         appearAtSecond: 5,
-        label: 'Head to Nature',
-        position: { x: 50, y: 55 },
-        targetVideoUrl: BRANCH_VIDEO_URL, // Per client, nature and city use the same branch video
+        label: 'Nature',
+        position: { x: 50, y: 60 },
+        targetVideoUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', // Mux test stream (alternative)
         targetScenarioId: 'nature',
       },
     ],
   },
-  'city': {
+  city: {
     id: 'city',
-    mainVideoUrl: BRANCH_VIDEO_URL,
+    mainVideoUrl: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_4x3/bipbop_4x3_variant.m3u8',
     branches: [
       {
         appearAtSecond: 8,
-        label: 'Restart',
+        label: 'Go Back',
         position: { x: 50, y: 50 },
-        targetVideoUrl: START_VIDEO_URL,
+        targetVideoUrl: 'https://stream.mux.com/x36xhzz0262501I021g02dc47w01kn527J/low.m3u8',
         targetScenarioId: 'start',
       },
     ],
   },
-  'nature': {
+  nature: {
     id: 'nature',
-    mainVideoUrl: BRANCH_VIDEO_URL, // Per client, nature and city use the same branch video
+    mainVideoUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
     branches: [
       {
         appearAtSecond: 8,
         label: 'Restart',
         position: { x: 50, y: 50 },
-        targetVideoUrl: START_VIDEO_URL,
+        targetVideoUrl: 'https://stream.mux.com/x36xhzz0262501I021g02dc47w01kn527J/low.m3u8',
         targetScenarioId: 'start',
       },
     ],
   },
 };
-export const initialScenarioId = 'start';

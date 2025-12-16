@@ -1,10 +1,8 @@
 import { create } from 'zustand';
 import type { Branch, Scenario } from '@/lib/types';
-const feedVideos = ['video1', 'video2', 'video3'];
+import { scenarios, initialScenarioId } from '@/data/scenarios';
 interface PlayerState {
-  feedVideos: string[];
-  currentFeedIndex: number;
-  currentVideoId: string | null;
+  currentScenarioId: string | null;
   videoSrc: string | null;
   branches: Branch[];
   isPlaying: boolean;
@@ -15,10 +13,8 @@ interface PlayerState {
   duration: number;
 }
 interface PlayerActions {
-  loadVideo: (videoId: string) => Promise<void>;
-  loadBranch: (targetVideoUrl: string, targetJson?: string) => Promise<void>;
-  nextVideo: () => void;
-  prevVideo: () => void;
+  startExperience: () => void;
+  loadScenario: (scenarioId: string) => void;
   togglePlay: () => void;
   toggleMute: () => void;
   setCurrentTime: (time: number) => void;
@@ -27,10 +23,8 @@ interface PlayerActions {
   play: () => void;
   pause: () => void;
 }
-export const usePlayerStore = create<PlayerState & PlayerActions>((set, get) => ({
-  feedVideos,
-  currentFeedIndex: 0,
-  currentVideoId: null,
+export const usePlayerStore = create<PlayerState & PlayerActions>((set) => ({
+  currentScenarioId: null,
   videoSrc: null,
   branches: [],
   isPlaying: false,
@@ -39,64 +33,42 @@ export const usePlayerStore = create<PlayerState & PlayerActions>((set, get) => 
   isLoading: true,
   currentTime: 0,
   duration: 0,
-  loadVideo: async (videoId: string) => {
-    set({ isLoading: true, isPlaying: false, currentTime: 0, branches: [] });
-    try {
-      const response = await fetch(`/data/${videoId}.json`);
-      if (!response.ok) throw new Error(`Failed to fetch scenario: ${videoId}`);
-      const scenario: Scenario = await response.json();
-      const newFeedIndex = get().feedVideos.findIndex(id => id === videoId);
+  startExperience: () => {
+    const initialScenario = scenarios[initialScenarioId];
+    if (initialScenario) {
       set({
         isStarted: true,
+        isLoading: true,
+        isPlaying: false,
+        currentTime: 0,
+        videoSrc: initialScenario.mainVideoUrl,
+        branches: initialScenario.branches,
+        currentScenarioId: initialScenario.id,
+        isPlaying: true,
+      });
+    } else {
+      console.error('Initial scenario not found!');
+      set({ isStarted: false, isLoading: false });
+    }
+  },
+  loadScenario: (scenarioId: string) => {
+    const scenario = scenarios[scenarioId];
+    if (scenario) {
+      set({
+        isLoading: true,
+        isPlaying: false,
+        currentTime: 0,
+        branches: [], // Clear old branches immediately
         videoSrc: scenario.mainVideoUrl,
         branches: scenario.branches,
-        currentVideoId: videoId,
-        currentFeedIndex: newFeedIndex !== -1 ? newFeedIndex : get().currentFeedIndex,
+        currentScenarioId: scenario.id,
         isPlaying: true,
-        isLoading: false,   // <-- clear loading flag
       });
-    } catch (error) {
-      console.error("Error loading scenario:", error);
-      set({ isLoading: false, isStarted: false });
+    } else {
+      console.error(`Scenario with id "${scenarioId}" not found!`);
+      // Fallback or error state
+      set({ isPlaying: false, isLoading: false });
     }
-  },
-  loadBranch: async (targetVideoUrl: string, targetJson?: string) => {
-    set({ isLoading: true, isPlaying: false, currentTime: 0, branches: [] });
-    if (targetJson) {
-      try {
-        const response = await fetch(targetJson);
-        if (!response.ok) throw new Error(`Failed to fetch branch JSON: ${targetJson}`);
-        const scenario: Scenario = await response.json();
-        set({ branches: scenario.branches });
-        // Extract the video ID from the branch JSON path (e.g., "/data/video2.json")
-        const newVideoId = targetJson.split('/').pop()?.replace('.json', '') ?? null;
-        if (newVideoId && feedVideos.includes(newVideoId)) {
-          const newFeedIndex = feedVideos.findIndex((id) => id === newVideoId);
-          set({
-            currentVideoId: newVideoId,
-            currentFeedIndex: newFeedIndex,
-          });
-        }
-      } catch (error) {
-        console.error("Error loading branch scenario:", error);
-        set({ branches: [] }); // Fallback to no branches on error
-      }
-    }
-    set({
-      videoSrc: targetVideoUrl,
-      isPlaying: true,
-      isLoading: false,   // <-- clear loading flag
-    });
-  },
-  nextVideo: () => {
-    const { feedVideos, currentFeedIndex } = get();
-    const nextIndex = (currentFeedIndex + 1) % feedVideos.length;
-    get().loadVideo(feedVideos[nextIndex]);
-  },
-  prevVideo: () => {
-    const { feedVideos, currentFeedIndex } = get();
-    const prevIndex = (currentFeedIndex - 1 + feedVideos.length) % feedVideos.length;
-    get().loadVideo(feedVideos[prevIndex]);
   },
   togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
   play: () => set({ isPlaying: true }),

@@ -11,7 +11,6 @@ export function SwipeFeed({ children, nextVideo, prevVideo }: SwipeFeedProps) {
       onSwipedDown: () => prevVideo(),
       delta: 80,
       preventScrollOnSwipe: false,
-      preventDefaultTouchmoveEvent: true,
       trackMouse: true,
     });
   return (

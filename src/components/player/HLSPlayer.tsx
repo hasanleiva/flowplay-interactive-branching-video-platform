@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import Hls from 'hls.js';
 import { usePlayerStore } from '@/stores/playerStore';
 export function HLSPlayer() {
@@ -12,74 +12,84 @@ export function HLSPlayer() {
   const setLoading = usePlayerStore(state => state.setLoading);
   const play = usePlayerStore(state => state.play);
   const pause = usePlayerStore(state => state.pause);
-  const nextVideo = usePlayerStore(state => state.nextVideo);
+  const stableSetLoading = useCallback(setLoading, [setLoading]);
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !videoSrc) return;
-
-    // Clean up any previous Hls instance before creating a new one
     if (hlsRef.current) {
       hlsRef.current.destroy();
-      hlsRef.current = null;
     }
-
+    const hls = new Hls({
+      // Fine-tune config for better resilience
+      maxBufferLength: 30,
+      maxMaxBufferLength: 600,
+    });
+    hlsRef.current = hls;
     if (Hls.isSupported()) {
-      const hls = new Hls();
-      hlsRef.current = hls;
       hls.loadSource(videoSrc);
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        setLoading(false);
+        stableSetLoading(false);
         if (isPlaying) {
-          video
-            .play()
-            .catch(e => {
-              if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') {
-                console.error('Play failed', e);
-              }
-            });
+          video.play().catch(e => {
+            if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') {
+              console.error('Play failed after manifest parse', e);
+            }
+          });
         }
       });
       hls.on(Hls.Events.ERROR, (event, data) => {
-        // Log only fatal (non‑recoverable) errors
         if (data.fatal) {
-          console.error('HLS fatal error:', data);
+          console.error('HLS fatal error:', data.details);
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              console.log('Attempting to recover from network error...');
+              hls.startLoad();
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              console.log('Attempting to recover from media error...');
+              hls.recoverMediaError();
+              break;
+            default:
+              // Cannot recover, destroy HLS instance
+              console.error('Unrecoverable HLS error, destroying instance.');
+              hls.destroy();
+              break;
+          }
+        } else {
+          // Suppress non-fatal errors from console spam if needed
+          // console.warn('HLS non-fatal error:', data.details);
         }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Native HLS support on Safari
       video.src = videoSrc;
       video.addEventListener('loadedmetadata', () => {
-        setLoading(false);
+        stableSetLoading(false);
         if (isPlaying) {
-          video
-            .play()
-            .catch(e => {
-              if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') {
-                console.error('Play failed', e);
-              }
-            });
+          video.play().catch(e => {
+            if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') {
+              console.error('Native HLS play failed', e);
+            }
+          });
         }
       });
     }
-
     return () => {
       if (hlsRef.current) {
         hlsRef.current.destroy();
-        hlsRef.current = null;
       }
     };
-  }, [videoSrc]);
+  }, [videoSrc, isPlaying, stableSetLoading]);
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
     if (isPlaying) {
-      video
-        .play()
-        .catch(e => {
-          if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') {
-            console.error('Play failed', e);
-          }
-        });
+      video.play().catch(e => {
+        if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') {
+          console.error('Play failed on isPlaying change', e);
+        }
+      });
     } else {
       video.pause();
     }
@@ -107,11 +117,11 @@ export function HLSPlayer() {
       playsInline
       onTimeUpdate={handleTimeUpdate}
       onLoadedMetadata={handleLoadedMetadata}
-      onCanPlay={() => setLoading(false)}
-      onWaiting={() => setLoading(true)}
+      onCanPlay={() => stableSetLoading(false)}
+      onWaiting={() => stableSetLoading(true)}
       onPlay={play}
       onPause={pause}
-      onEnded={nextVideo}
+      onEnded={pause} // Pause video on end, no more feed
       loop={false}
     />
   );

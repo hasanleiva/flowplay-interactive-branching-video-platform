@@ -7,10 +7,10 @@ export interface Branch {
   label: string;
   position: Position;
   targetVideoUrl: string;
-  targetJson?: string;
+  targetScenarioId: string;
 }
 export interface Scenario {
-  id?: string;
+  id: string;
   mainVideoUrl: string;
   branches: Branch[];
 }
