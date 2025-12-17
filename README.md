@@ -1,6 +1,6 @@
 # FlowPlay - Interactive Branching Video Platform
 
-[![[cloudflarebutton]]](https://deploy.workers.cloudflare.com/?url=${repositoryUrl})
+[![[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/hasanleiva/flowplay-interactive-branching-video-platform)]](https://deploy.workers.cloudflare.com/?url=${repositoryUrl})
 
 A minimalist, mobile-first interactive video player that enables seamless storytelling through timed, branching choices overlaid on HLS streams.
 
@@ -136,7 +136,7 @@ Deploy to Cloudflare Workers/Pages for global CDN + free tier.
 
 **Production URL**: `https://flowplay-<hash>.workers.dev`
 
-**[cloudflarebutton]**: One-click deploy via button above (auto-configures).
+**[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/hasanleiva/flowplay-interactive-branching-video-platform)**: One-click deploy via button above (auto-configures).
 
 **PWA on Deploy**: Served as SPA; add to homescreen via browser prompt.
 
